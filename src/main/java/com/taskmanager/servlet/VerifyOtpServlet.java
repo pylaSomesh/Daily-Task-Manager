@@ -80,6 +80,10 @@ public class VerifyOtpServlet extends HttpServlet {
         }
 
         session.setAttribute("otpVerified", Boolean.TRUE);
+
+        // Remove demo OTP after successful verification
+        session.removeAttribute("demoOtp");
+
         response.sendRedirect("resetPassword");
     }
 }
