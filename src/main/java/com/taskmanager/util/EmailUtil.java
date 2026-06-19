@@ -15,10 +15,6 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 public final class EmailUtil {
 	
@@ -36,79 +32,23 @@ public final class EmailUtil {
 
         try {
 
-            String apiKey =
-                    System.getenv("RESEND_API_KEY");
+            String host =
+                    MailConfig.get("mail.smtp.host");
 
-            String json = """
-            {
-              "from": "onboarding@resend.dev",
-              "to": ["%s"],
-              "subject": "Daily Task Manager - Password Reset OTP",
-              "html": "%s"
-            }
-            """.formatted(
-                    toEmail,
-                    buildOtpHtml(otp, expiryMinutes)
-                            .replace("\"", "\\\"")
-                            .replace("\n", "")
-            );
+            String port =
+                    MailConfig.get(
+                            "mail.smtp.port",
+                            "587");
 
-            HttpRequest request =
-                    HttpRequest.newBuilder()
-                            .uri(
-                                    URI.create(
-                                            "https://api.resend.com/emails"))
-                            .header(
-                                    "Authorization",
-                                    "Bearer " + apiKey)
-                            .header(
-                                    "Content-Type",
-                                    "application/json")
-                            .POST(
-                                    HttpRequest.BodyPublishers
-                                            .ofString(json))
-                            .build();
+            String usernameConfig =
+                    System.getenv("MAIL_USERNAME");
 
-            HttpResponse<String> response =
-                    HttpClient.newHttpClient()
-                            .send(
-                                    request,
-                                    HttpResponse.BodyHandlers.ofString());
-
-            System.out.println(
-                    "Resend Response: "
-                            + response.statusCode());
-
-            System.out.println(
-                    response.body());
-
-            return response.statusCode() == 200
-                    || response.statusCode() == 202;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return false;
-        }
-    }
-
-    
-    public static boolean sendTaskReminderEmail(
-            String email,
-            String username,
-            String taskTitle,
-            String dueDate) {
-
-        try {
-
-            String host = MailConfig.get("mail.smtp.host");
-            String port = MailConfig.get("mail.smtp.port", "587");
-            String usernameConfig = MailConfig.get("mail.username");
-            String password = MailConfig.getMailPassword();
+            String password =
+                    MailConfig.getMailPassword();
 
             String from =
-                    MailConfig.get("mail.from",
+                    MailConfig.get(
+                            "mail.from",
                             usernameConfig);
 
             String fromName =
@@ -116,30 +56,39 @@ public final class EmailUtil {
                             "mail.from.name",
                             "Daily Task Manager");
 
-            Properties props = new Properties();
+            Properties props =
+                    new Properties();
 
-            props.put("mail.smtp.host", host);
-            props.put("mail.smtp.port", port);
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable",
+            props.put(
+                    "mail.smtp.host",
+                    host);
+
+            props.put(
+                    "mail.smtp.port",
+                    port);
+
+            props.put(
+                    "mail.smtp.auth",
                     "true");
-            
-            
-           
 
-            Session session = Session.getInstance(
-                    props,
-                    new Authenticator() {
+            props.put(
+                    "mail.smtp.starttls.enable",
+                    "true");
 
-                        @Override
-                        protected PasswordAuthentication
-                        getPasswordAuthentication() {
+            Session session =
+                    Session.getInstance(
+                            props,
+                            new Authenticator() {
 
-                            return new PasswordAuthentication(
-                                    usernameConfig,
-                                    password);
-                        }
-                    });
+                                @Override
+                                protected PasswordAuthentication
+                                getPasswordAuthentication() {
+
+                                    return new PasswordAuthentication(
+                                            usernameConfig,
+                                            password);
+                                }
+                            });
 
             MimeMessage message =
                     new MimeMessage(session);
@@ -151,58 +100,16 @@ public final class EmailUtil {
 
             message.setRecipients(
                     Message.RecipientType.TO,
-                    InternetAddress.parse(email));
+                    InternetAddress.parse(
+                            toEmail));
 
             message.setSubject(
-                    "Pending Task Reminder");
-
-            String html =
-                    "<html><body style='font-family:Segoe UI,Arial,sans-serif;'>"
-
-                    + "<h2 style='color:#1f2937;'>"
-                    + "Daily Task Manager"
-                    + "</h2>"
-
-                    + "<p>Hello "
-                    + username
-                    + ",</p>"
-
-                    + "<p>"
-                    + "We noticed that you have a pending task "
-                    + "that has passed its due date."
-                    + "</p>"
-
-                    + "<div style='background:#f3f4f6;"
-                    + "padding:15px;"
-                    + "border-radius:8px;'>"
-
-                    + "<p><strong>Task:</strong> "
-                    + taskTitle
-                    + "</p>"
-
-                    + "<p><strong>Due Date:</strong> "
-                    + dueDate
-                    + "</p>"
-
-                    + "</div>"
-
-                    + "<p>"
-                    + "Please log in and complete this task "
-                    + "as soon as possible."
-                    + "</p>"
-
-                    + "<p>"
-                    + "Stay productive! "
-                    + "</p>"
-
-                    + "<p>"
-                    + "<strong>Daily Task Manager Team</strong>"
-                    + "</p>"
-
-                    + "</body></html>";
+                    "Daily Task Manager - Password Reset OTP");
 
             message.setContent(
-                    html,
+                    buildOtpHtml(
+                            otp,
+                            expiryMinutes),
                     "text/html; charset=UTF-8");
 
             Transport.send(message);
@@ -211,10 +118,153 @@ public final class EmailUtil {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error(
+                    "Failed to send OTP email",
+                    e);
+
             return false;
         }
     }
+    
+    public static boolean sendGroupedReminderEmail(
+            String email,
+            String username,
+            List<TaskReminder> tasks) {
+
+        try {
+
+            String host =
+                    MailConfig.get("mail.smtp.host");
+
+            String port =
+                    MailConfig.get(
+                            "mail.smtp.port",
+                            "587");
+
+            String usernameConfig =
+                    System.getenv(
+                            "MAIL_USERNAME");
+
+            String password =
+                    MailConfig.getMailPassword();
+
+            Properties props =
+                    new Properties();
+
+            props.put(
+                    "mail.smtp.host",
+                    host);
+
+            props.put(
+                    "mail.smtp.port",
+                    port);
+
+            props.put(
+                    "mail.smtp.auth",
+                    "true");
+
+            props.put(
+                    "mail.smtp.starttls.enable",
+                    "true");
+
+            Session session =
+                    Session.getInstance(
+                            props,
+                            new Authenticator() {
+
+                                @Override
+                                protected PasswordAuthentication
+                                getPasswordAuthentication() {
+
+                                    return new PasswordAuthentication(
+                                            usernameConfig,
+                                            password);
+                                }
+                            });
+
+            MimeMessage message =
+                    new MimeMessage(session);
+
+            message.setFrom(
+                    new InternetAddress(
+                            MailConfig.get(
+                                    "mail.from",
+                                    usernameConfig),
+                            MailConfig.get(
+                                    "mail.from.name",
+                                    "Daily Task Manager")));
+
+            message.setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(email));
+
+            message.setSubject(
+                    "You Have Overdue Tasks");
+
+            StringBuilder html =
+                    new StringBuilder();
+
+            html.append(
+                    "<html><body style='font-family:Segoe UI;'>");
+
+            html.append(
+                    "<h2>Daily Task Manager</h2>");
+
+            html.append(
+                    "<p>Hello "
+                            + username
+                            + ",</p>");
+
+            html.append(
+                    "<p>You currently have "
+                            + tasks.size()
+                            + " overdue task(s):</p>");
+
+            html.append("<ol>");
+
+            for (TaskReminder task : tasks) {
+
+                html.append(
+                        "<li><strong>")
+                    .append(task.getTitle())
+                    .append("</strong><br>")
+                    .append("Due Date: ")
+                    .append(task.getDueDate())
+                    .append("</li><br>");
+            }
+
+            html.append("</ol>");
+
+            html.append(
+                    "<p>Please review your dashboard and complete these tasks.</p>");
+
+            html.append(
+                    "<p>Stay productive!</p>");
+
+            html.append(
+                    "<p><strong>Daily Task Manager Team</strong></p>");
+
+            html.append(
+                    "</body></html>");
+
+            message.setContent(
+                    html.toString(),
+                    "text/html; charset=UTF-8");
+
+            Transport.send(message);
+
+            return true;
+
+        } catch (Exception e) {
+
+            logger.error(
+                    "Failed to send grouped reminder email",
+                    e);
+
+            return false;
+        }
+    }
+    
     private static String buildOtpHtml(
             String otp,
             int expiryMinutes) {
@@ -278,12 +328,11 @@ public final class EmailUtil {
                 + "</html>";
     }
     
-    
-    
-    public static boolean sendGroupedReminderEmail(
+    public static boolean sendTaskReminderEmail(
             String email,
             String username,
-            List<TaskReminder> tasks) {
+            String taskTitle,
+            String dueDate) {
 
         try {
 
@@ -296,11 +345,21 @@ public final class EmailUtil {
                             "587");
 
             String usernameConfig =
-                    MailConfig.get(
-                            "mail.username");
+                    System.getenv(
+                            "MAIL_USERNAME");
 
             String password =
                     MailConfig.getMailPassword();
+
+            String from =
+                    MailConfig.get(
+                            "mail.from",
+                            usernameConfig);
+
+            String fromName =
+                    MailConfig.get(
+                            "mail.from.name",
+                            "Daily Task Manager");
 
             Properties props =
                     new Properties();
@@ -341,64 +400,63 @@ public final class EmailUtil {
 
             message.setFrom(
                     new InternetAddress(
-                            usernameConfig,
-                            "Daily Task Manager"));
+                            from,
+                            fromName));
 
             message.setRecipients(
                     Message.RecipientType.TO,
                     InternetAddress.parse(email));
 
             message.setSubject(
-                    "You Have Overdue Tasks");
+                    "Pending Task Reminder");
 
-            StringBuilder html =
-                    new StringBuilder();
+            String html =
+                    "<html><body style='font-family:Segoe UI,Arial,sans-serif;'>"
 
-            html.append(
-                    "<html><body style='font-family:Segoe UI;'>");
+                    + "<h2 style='color:#1f2937;'>"
+                    + "Daily Task Manager"
+                    + "</h2>"
 
-            html.append(
-                    "<h2>Daily Task Manager</h2>");
-
-            html.append(
-                    "<p>Hello "
+                    + "<p>Hello "
                     + username
-                    + ",</p>");
+                    + ",</p>"
 
-            html.append(
-                    "<p>You currently have "
-                    + tasks.size()
-                    + " overdue task(s):</p>");
+                    + "<p>"
+                    + "We noticed that you have a pending task "
+                    + "that has passed its due date."
+                    + "</p>"
 
-            html.append("<ol>");
+                    + "<div style='background:#f3f4f6;"
+                    + "padding:15px;"
+                    + "border-radius:8px;'>"
 
-            for (TaskReminder task : tasks) {
+                    + "<p><strong>Task:</strong> "
+                    + taskTitle
+                    + "</p>"
 
-                html.append(
-                        "<li><strong>")
-                    .append(task.getTitle())
-                    .append("</strong><br>")
-                    .append("Due Date: ")
-                    .append(task.getDueDate())
-                    .append("</li><br>");
-            }
+                    + "<p><strong>Due Date:</strong> "
+                    + dueDate
+                    + "</p>"
 
-            html.append("</ol>");
+                    + "</div>"
 
-            html.append(
-                    "<p>Please review your dashboard and complete these tasks.</p>");
+                    + "<p>"
+                    + "Please log in and complete this task "
+                    + "as soon as possible."
+                    + "</p>"
 
-            html.append(
-                    "<p>Stay productive! </p>");
+                    + "<p>"
+                    + "Stay productive!"
+                    + "</p>"
 
-            html.append(
-                    "<p><strong>Daily Task Manager Team</strong></p>");
+                    + "<p>"
+                    + "<strong>Daily Task Manager Team</strong>"
+                    + "</p>"
 
-            html.append(
-                    "</body></html>");
+                    + "</body></html>";
 
             message.setContent(
-                    html.toString(),
+                    html,
                     "text/html; charset=UTF-8");
 
             Transport.send(message);
@@ -407,8 +465,16 @@ public final class EmailUtil {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error(
+                    "Failed to send task reminder email",
+                    e);
+
             return false;
         }
     }
-}
+    
+    
+    
+ 
+    }
+
