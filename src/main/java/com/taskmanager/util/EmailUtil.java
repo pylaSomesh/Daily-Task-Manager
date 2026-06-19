@@ -44,7 +44,7 @@ props.put("mail.smtp.host", host);
 props.put("mail.smtp.port", "465");
 props.put("mail.smtp.auth", "true");
 props.put("mail.smtp.ssl.enable", "true");
-			Properties props = new Properties();
+			
 System.out.println("Connecting to " + host + ":" + port);
 
             Session session = Session.getInstance(props, new Authenticator() {
