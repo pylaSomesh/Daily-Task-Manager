@@ -46,6 +46,34 @@
             <version>9.3.0</version>
         </dependency>
 
+             <!-- Jakarta Mail -->
+<dependency>
+    <groupId>com.sun.mail</groupId>
+    <artifactId>jakarta.mail</artifactId>
+    <version>2.0.1</version>
+</dependency>
+
+<!-- BCrypt -->
+<dependency>
+    <groupId>org.mindrot</groupId>
+    <artifactId>jbcrypt</artifactId>
+    <version>0.4</version>
+</dependency>
+
+<!-- SLF4J API -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.17</version>
+</dependency>
+
+<!-- Simple Logger -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>2.0.17</version>
+</dependency>
+
     </dependencies>
 
     <build>
