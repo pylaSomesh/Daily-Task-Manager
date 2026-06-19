@@ -55,37 +55,28 @@ public class ForgotPasswordServlet extends HttpServlet {
 
             request.getRequestDispatcher(
                     "forgot-password.jsp")
-                   .forward(
-                           request,
-                           response);
+                   .forward(request, response);
 
             return;
         }
 
         email = email.trim().toLowerCase();
 
-        User user =
-                userDAO.getUserByEmail(email);
+        User user = userDAO.getUserByEmail(email);
 
         if (user == null) {
 
-            request.setAttribute(
-                    "toastType",
-                    "error");
+            request.setAttribute("toastType", "error");
 
             request.setAttribute(
                     "toastMessage",
                     "No account found with that email address.");
 
-            request.setAttribute(
-                    "email",
-                    email);
+            request.setAttribute("email", email);
 
             request.getRequestDispatcher(
                     "forgot-password.jsp")
-                   .forward(
-                           request,
-                           response);
+                   .forward(request, response);
 
             return;
         }
@@ -99,12 +90,9 @@ public class ForgotPasswordServlet extends HttpServlet {
         if (!otpDAO.saveOtp(
                 email,
                 otp,
-                OtpUtil.expiryTime(
-                        expiryMinutes))) {
+                OtpUtil.expiryTime(expiryMinutes))) {
 
-            request.setAttribute(
-                    "toastType",
-                    "error");
+            request.setAttribute("toastType", "error");
 
             request.setAttribute(
                     "toastMessage",
@@ -112,9 +100,7 @@ public class ForgotPasswordServlet extends HttpServlet {
 
             request.getRequestDispatcher(
                     "forgot-password.jsp")
-                   .forward(
-                           request,
-                           response);
+                   .forward(request, response);
 
             return;
         }
@@ -122,10 +108,12 @@ public class ForgotPasswordServlet extends HttpServlet {
         HttpSession session =
                 request.getSession(true);
 
-        // Demo OTP
-        session.setAttribute(
-                "demoOtp",
-                otp);
+        // Remove old values
+        session.removeAttribute("demoOtp");
+        session.removeAttribute("otpVerified");
+
+        // Store current OTP for demo display
+        session.setAttribute("demoOtp", otp);
 
         session.setAttribute(
                 "resetEmail",
@@ -135,16 +123,11 @@ public class ForgotPasswordServlet extends HttpServlet {
                 "otpSource",
                 "login");
 
-        session.removeAttribute(
-                "otpVerified");
-
         ToastUtil.flash(
                 session,
                 "success",
-                "OTP Generated Successfully. Demo OTP: "
-                        + otp);
+                "OTP generated successfully.");
 
-        response.sendRedirect(
-                "verifyOtp");
+        response.sendRedirect("verifyOtp");
     }
 }
