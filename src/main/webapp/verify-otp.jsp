@@ -94,7 +94,7 @@ int expiryMinutes =
                         font-weight:bold;
                         text-align:center;">
 
-                    Demo OTP:
+                        OTP:
                     <%= demoOtp %>
 
                 </div>
