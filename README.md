@@ -238,6 +238,28 @@ This project helped strengthen understanding of:
 
 ---
 
+## Screenshots
+
+### Home Page
+
+<img width="1920" height="1080" alt="Screenshot (43)" src="https://github.com/user-attachments/assets/e59605ce-0aa3-4834-930e-153c1e909798" />
+
+
+### Login Page
+
+<img width="1920" height="1080" alt="Screenshot (44)" src="https://github.com/user-attachments/assets/7aaa01c9-eb3b-4d6f-aa61-1340c6c714f5" />
+
+
+### Dashboard
+
+<img width="1920" height="1080" alt="Screenshot (41)" src="https://github.com/user-attachments/assets/7d977100-2c9d-4cef-a9e3-5c3677266ddc" />
+
+
+### Analytics
+
+<img width="1920" height="1080" alt="Screenshot (42)" src="https://github.com/user-attachments/assets/5b459dc4-3acf-414d-b3b2-94dc956e59b1" />
+
+
 ## Running the Application
 
 ### Prerequisites
