@@ -39,11 +39,13 @@ public final class EmailUtil {
             }
 
             Properties props = new Properties();
-            props.put("mail.smtp.host", host);
-            props.put("mail.smtp.port", port);
-            props.put("mail.smtp.auth", MailConfig.get("mail.smtp.auth", "true"));
-            props.put("mail.smtp.starttls.enable",
-                    MailConfig.get("mail.smtp.starttls.enable", "true"));
+          
+props.put("mail.smtp.host", host);
+props.put("mail.smtp.port", "465");
+props.put("mail.smtp.auth", "true");
+props.put("mail.smtp.ssl.enable", "true");
+			Properties props = new Properties();
+
 
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
