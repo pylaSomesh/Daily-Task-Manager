@@ -1,6 +1,7 @@
 package com.taskmanager.util;
 import com.taskmanager.model.TaskReminder;
 
+
 import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
@@ -14,6 +15,11 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 public final class EmailUtil {
 	
 	private static final Logger logger =
@@ -23,51 +29,65 @@ public final class EmailUtil {
     private EmailUtil() {
     }
 
-    public static boolean sendOtpEmail(String toEmail, String otp, int expiryMinutes) {
+    public static boolean sendOtpEmail(
+            String toEmail,
+            String otp,
+            int expiryMinutes) {
+
         try {
-            String host = MailConfig.get("mail.smtp.host");
-            String port = MailConfig.get("mail.smtp.port", "587");
-            String username = MailConfig.get("mail.username");
-            String password =
-                    MailConfig.getMailPassword();
-            String from = MailConfig.get("mail.from", username);
-            String fromName = MailConfig.get("mail.from.name", "Daily Task Manager");
 
-            if (host.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                System.err.println("Email configuration is incomplete. Update mail.properties.");
-                return false;
+            String apiKey =
+                    System.getenv("RESEND_API_KEY");
+
+            String json = """
+            {
+              "from": "onboarding@resend.dev",
+              "to": ["%s"],
+              "subject": "Daily Task Manager - Password Reset OTP",
+              "html": "%s"
             }
+            """.formatted(
+                    toEmail,
+                    buildOtpHtml(otp, expiryMinutes)
+                            .replace("\"", "\\\"")
+                            .replace("\n", "")
+            );
 
-            Properties props = new Properties();
-          
-props.put("mail.smtp.host", host);
-props.put("mail.smtp.port", "465");
-props.put("mail.smtp.auth", "true");
-props.put("mail.smtp.ssl.enable", "true");
-			
-System.out.println("Connecting to " + host + ":" + port);
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(
+                                    URI.create(
+                                            "https://api.resend.com/emails"))
+                            .header(
+                                    "Authorization",
+                                    "Bearer " + apiKey)
+                            .header(
+                                    "Content-Type",
+                                    "application/json")
+                            .POST(
+                                    HttpRequest.BodyPublishers
+                                            .ofString(json))
+                            .build();
 
-            Session session = Session.getInstance(props, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username, password);
-                }
-            });
+            HttpResponse<String> response =
+                    HttpClient.newHttpClient()
+                            .send(
+                                    request,
+                                    HttpResponse.BodyHandlers.ofString());
 
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from, fromName));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject("Daily Task Manager – Password Reset OTP");
-            message.setContent(buildOtpHtml(otp, expiryMinutes), "text/html; charset=UTF-8");
+            System.out.println(
+                    "Resend Response: "
+                            + response.statusCode());
 
-            Transport.send(message);
-            return true;
+            System.out.println(
+                    response.body());
+
+            return response.statusCode() == 200
+                    || response.statusCode() == 202;
 
         } catch (Exception e) {
 
-            logger.error(
-                    "Failed to send OTP email",
-                    e);
+            e.printStackTrace();
 
             return false;
         }
