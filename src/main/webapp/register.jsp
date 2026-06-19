@@ -73,9 +73,12 @@ if (toastType == null) {
             <div class="field">
                 <label for="password">Password</label>
                 <div class="input-wrap has-toggle">
-                    <input type="password" id="password" name="password" placeholder="Min. 8 characters"
-                           autocomplete="new-password" required minlength="8" maxlength="128"
-                           oninput="updateStrength(this.value)">
+                    <input type="password"
+       name="password"
+       required
+       minlength="8"
+       pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&]).{8,}$"
+       title="Password must contain at least 8 characters, 1 uppercase letter, 1 number and 1 special character">
                     <button type="button" class="toggle-pw" aria-label="Show password"
                             onclick="toggleVisibility('password', this)">
                         <svg id="eye-pw" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
