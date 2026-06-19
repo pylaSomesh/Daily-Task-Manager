@@ -235,25 +235,6 @@ This project helped strengthen understanding of:
 
 ---
 
-## Environment Configuration
-
-The application uses environment variables for database connectivity.
-
-Required variables:
-
-```properties
-DB_URL=
-DB_USER=
-DB_PASSWORD=
-```
-
-Example:
-
-```properties
-DB_URL=jdbc:mysql://localhost:3306/taskmanager
-DB_USER=root
-DB_PASSWORD=your_password
-```
 
 ---
 
