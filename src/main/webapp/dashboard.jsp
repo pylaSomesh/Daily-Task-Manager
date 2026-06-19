@@ -76,6 +76,7 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    
 </head>
 <body<% if (toastType != null && toastMessage != null) { %>
     data-toast-type="<%= toastType %>"
