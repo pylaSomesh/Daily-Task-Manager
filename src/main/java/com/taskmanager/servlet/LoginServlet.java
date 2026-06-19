@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.taskmanager.dao.UserDAO;
 import com.taskmanager.model.User;
+import com.taskmanager.util.ToastUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -31,6 +32,21 @@ public class LoginServlet extends HttpServlet {
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        
+        String passwordRegex =
+                "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$";
+
+        if (!password.matches(passwordRegex)) {
+
+            ToastUtil.flash(
+                    request.getSession(),
+                    "error",
+                    "Password must contain at least 8 characters, 1 uppercase letter, 1 number and 1 special character."
+            );
+
+            response.sendRedirect("register.jsp");
+            return;
+        }
 
         User user = userDAO.authenticate(email, password);
 
