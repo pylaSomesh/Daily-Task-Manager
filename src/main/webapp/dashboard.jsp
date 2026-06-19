@@ -92,6 +92,7 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
             </span>
             <span class="navbar-title">Daily Task Manager</span>
         </a>
+  
         <div class="navbar-right">
             <span class="navbar-greeting">Welcome, <strong><%= username %></strong></span>
             <% if (profileImagePath != null) { %>
@@ -113,20 +114,45 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
     </nav>
 
     <div class="content">
-        <div class="page-header">
-            <div class="page-header-user">
-                <% if (profileImagePath != null) { %>
-                <img src="<%= profileImagePath %>" alt="Profile picture" class="avatar-lg">
-                <% } else { %>
-                <div class="avatar-fallback avatar-fallback-lg" aria-hidden="true"><%= profileInitial %></div>
-                <% } %>
-                <div class="page-header-user-info">
-                    <h2>My Dashboard</h2>
-                    <p>Here's an overview of your tasks for today.</p>
-                </div>
-            </div>
-            <span class="page-date" id="live-date" aria-live="polite"></span>
+<div class="page-header">
+
+    <div class="page-header-user">
+
+        <% if (profileImagePath != null) { %>
+        <img src="<%= profileImagePath %>"
+             alt="Profile picture"
+             class="avatar-lg">
+        <% } else { %>
+        <div class="avatar-fallback avatar-fallback-lg"
+             aria-hidden="true">
+            <%= profileInitial %>
         </div>
+        <% } %>
+
+        <div class="page-header-user-info">
+            <h2>My Dashboard</h2>
+            <p>Here's an overview of your tasks.</p>
+        </div>
+
+    </div>
+
+    <div class="header-actions">
+
+        <a href="analytics"
+           class="analytics-btn">
+
+            View Analytics
+
+        </a>
+
+        <span class="page-date"
+              id="live-date"
+              aria-live="polite">
+        </span>
+
+    </div>
+
+</div>
 
         <div class="stats-grid" role="region" aria-label="Task statistics">
             <div class="stat-card" data-color="blue">
@@ -174,7 +200,7 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
         <div class="main-grid">
             <aside>
                 <div class="card">
-                    <div class="card-head">
+                    <div class="card-head" onclick="toggleTaskForm()" style="cursor:pointer;">
                         <div class="card-head-left">
                             <div class="card-head-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -182,7 +208,7 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
                             <div><h3>Add New Task</h3><p>Create a task quickly</p></div>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div id="taskFormContainer" class="card-body" style="display:none;">
                         <form class="add-form" action="addTask" method="POST" onsubmit="return validateAddForm(this)">
                             <div class="field">
                                 <label for="title">Task Title <span class="required">*</span></label>
@@ -196,7 +222,7 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
                             </div>
                             <div class="field">
                                 <label for="dueDate">Due Date <span class="required">*</span></label>
-                                <input type="date" id="dueDate" name="dueDate" class="form-control" required>
+                                <input type="date" id="dueDate" name="dueDate" class="form-control"  required>
                             </div>
                             <div class="field">
                                 <label for="priority">Priority <span class="required">*</span></label>
@@ -338,14 +364,35 @@ String editQuerySuffix = filterQueryStr.isEmpty() ? "" : "&" + filterQueryStr;
         </div>
     </div>
 
-    <footer role="contentinfo">
-        <span class="footer-copy">&copy; <%= java.time.Year.now().getValue() %> Daily Task Manager</span>
-    </footer>
+<footer class="footer">
+
+    <p>
+        Daily Task Manager © 2026
+    </p>
+
+   <p>
+    Support:
+    <a href="mailto:dailytaskmanager.project@gmail.com"
+       style="color: inherit; text-decoration: none;">
+        dailytaskmanager.project@gmail.com
+    </a>
+</p>
+
+</footer>
 </div>
 
 <script src="js/toast.js"></script>
 <script src="js/darkmode.js"></script>
 <script src="js/common.js"></script>
 <script src="js/dashboard.js"></script>
+
+<script>
+function toggleTaskForm(){
+ const form=document.getElementById('taskFormContainer');
+ if(!form) return;
+ form.style.display=(form.style.display==='none'||form.style.display==='')?'block':'none';
+}
+</script>
+
 </body>
 </html>
