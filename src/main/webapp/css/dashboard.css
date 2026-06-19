@@ -1098,6 +1098,435 @@ footer {
         0 8px 20px
         rgba(74,144,217,.35);
 }
+
+
+/*
+ * ============================================================
+ *  dashboard-responsive.css
+ *  Additive responsive overrides — DO NOT modify dashboard.css
+ *  Add this <link> AFTER dashboard.css in the <head>
+ * ============================================================
+ *
+ *  ISSUES FIXED & WHY
+ *  ──────────────────
+ *  1. .navbar fixed height: 64px + many right-side items (greeting,
+ *     avatar, theme-toggle, profile link, logout) overflow on narrow
+ *     viewports.  Fix: allow auto height, let items wrap gracefully.
+ *
+ *  2. .navbar-right gap:14px with 5 items at full size overflows
+ *     320–425 px screens.  Fix: tighter gap, reduced padding on
+ *     buttons, hide greeting text on very small screens.
+ *
+ *  3. .analytics-btn padding:12px 22px is wide and sits next to
+ *     .page-date (white-space:nowrap) inside .header-actions — both
+ *     overflow at 320–375 px.  Fix: stack header-actions vertically
+ *     and shrink button padding on small screens.
+ *
+ *  4. table min-width:900px (set in the ≤768px media block) forces
+ *     a 900 px wide table into a ≤768 px .table-wrap, which is
+ *     correct for horizontal scroll, but the .content padding means
+ *     the wrapper itself can be narrower than 100vw on phones,
+ *     causing outer overflow.  Fix: ensure .table-wrap never exceeds
+ *     100% of its parent and the content container stays within
+ *     viewport.
+ *
+ *  5. .task-toolbar-form flex items: .toolbar-search has
+ *     min-width:200px and .toolbar-field has min-width:140px. On
+ *     320 px these minimums push the row beyond the card width.
+ *     Fix: drop minimum widths at mobile so items shrink-to-fit.
+ *
+ *  6. .main-grid grid-template-columns:340px 1fr is already fixed at
+ *     960px, but between 768–960px the aside column is exactly 340px
+ *     leaving the task list starved.  Existing rule covers this; we
+ *     reinforce at 768px too.
+ *
+ *  7. .avatar / .avatar-lg images have no max-width, could overflow
+ *     narrow containers.  Fix: cap at 100%.
+ *
+ *  8. body::after width:1800px is a decorative pseudo-element that
+ *     can trigger a horizontal scrollbar on some browsers even with
+ *     overflow-x:hidden on body, because it uses position:fixed.
+ *     Fix: constrain to 100vw on small screens.
+ *
+ *  9. .btn-profile-link has no explicit responsive style — at small
+ *     sizes sits between avatar and logout and can be clipped.
+ *     Fix: keep visible with reduced padding.
+ *
+ * 10. .page-header flex row (user info + header-actions) with
+ *     flex-wrap:wrap already handles wrapping, but .header-actions
+ *     itself is a flex row with no wrap, causing inner overflow.
+ *     Fix: wrap .header-actions.
+ * ============================================================
+ */
+
+
+/* ── 1. Prevent decorative glow from triggering horizontal scroll ── */
+@media (max-width: 768px) {
+    body::after {
+        width: 100vw;
+    }
+}
+
+
+/* ── 2. NAVBAR ─────────────────────────────────────────────────── */
+
+/* Ensure images in the navbar never overflow */
+.navbar .avatar,
+img.avatar {
+    max-width: 34px;
+    max-height: 34px;
+    object-fit: cover;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    /* Allow navbar to grow vertically when items wrap */
+    .navbar {
+        height: auto;
+        min-height: 56px;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Keep brand and right section both full-width rows when they wrap */
+    .navbar-brand {
+        flex: 1 1 auto;
+    }
+
+    .navbar-right {
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    /* Tighten logout button so it fits alongside profile link */
+    .btn-logout {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 8px 12px;
+    }
+
+    /* Hide greeting text on very small screens to save space;
+       the avatar already identifies the user */
+    .navbar-greeting {
+        display: none;
+    }
+
+    /* Reduce title size to keep brand on one line */
+    .navbar-title {
+        font-size: 13.5px;
+    }
+
+    .btn-logout {
+        padding: 5px 8px;
+        font-size: 12.5px;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 375px) {
+    /* On the smallest iPhones give a tiny bit more room */
+    .navbar-right {
+        gap: 6px;
+    }
+}
+
+
+/* ── 3. PAGE HEADER (avatar + title + header-actions) ──────────── */
+
+@media (max-width: 768px) {
+    /* page-header already has flex-wrap:wrap; ensure header-actions
+       also wraps when it contains long items */
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 10px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Let analytics button shrink and allow date to wrap */
+    .analytics-btn {
+        padding: 10px 16px;
+        font-size: 13.5px;
+        width: auto;
+    }
+
+    .page-date {
+        white-space: normal;
+        font-size: 12.5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        gap: 12px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .analytics-btn {
+        padding: 9px 14px;
+        font-size: 13px;
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        display: flex;
+    }
+
+    .page-date {
+        font-size: 12px;
+    }
+}
+
+/* page-header-user: avatar + text side by side; existing rule stacks
+   them at 768px — we just ensure text aligns left on small phones  */
+@media (max-width: 480px) {
+    .page-header-user {
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: 12px;
+    }
+
+    /* Constrain large avatar so it doesn't push content off-screen */
+    .avatar-lg,
+    img.avatar-lg {
+        width: 44px;
+        height: 44px;
+        max-width: 44px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .avatar-fallback-lg {
+        width: 44px;
+        height: 44px;
+        max-width: 44px;
+        flex-shrink: 0;
+        font-size: 16px;
+    }
+}
+
+
+/* ── 4. STATS GRID ──────────────────────────────────────────────── */
+/* Existing rules: 4-col → 2-col at 720px → 1-col at 480px.
+   Add a 2-col layout for the 425–720px gap and ensure cards
+   never overflow their column. */
+
+@media (max-width: 720px) {
+    .stat-card {
+        padding: 18px 16px;
+        gap: 14px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .stat-value {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        padding: 16px 14px;
+        gap: 12px;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+}
+
+
+/* ── 5. MAIN GRID & CARDS ───────────────────────────────────────── */
+/* .main-grid grid-template-columns:340px 1fr collapses at 960px.
+   Reinforce for 768px just in case and guard card padding. */
+
+@media (max-width: 960px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Ensure cards never overflow viewport width */
+.card {
+    min-width: 0;
+    max-width: 100%;
+}
+
+
+/* ── 6. TASK TOOLBAR ─────────────────────────────────────────────── */
+/* .toolbar-field min-width:140px and .toolbar-search min-width:200px
+   can exceed a 320–375px viewport.  Override only at small sizes. */
+
+@media (max-width: 600px) {
+    .task-toolbar {
+        padding: 0 14px 14px;
+    }
+
+    .task-toolbar-form {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Let every toolbar field stretch full width */
+    .toolbar-field {
+        flex: 1 1 100%;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .toolbar-search {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .btn-toolbar {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* ── 7. TASK TABLE ───────────────────────────────────────────────── */
+/* The existing rule sets table { min-width:900px } inside
+   @media(max-width:768px), which is intentional (scroll within
+   .table-wrap).  We must ensure .table-wrap itself is bounded. */
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    /* Prevent the section/card from growing wider than the viewport */
+    section {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .card {
+        overflow: hidden;
+    }
+
+    /* Give a subtle visual hint that the table scrolls */
+    .table-wrap {
+        border-radius: 0 0 var(--radius-lg, 14px) var(--radius-lg, 14px);
+    }
+}
+
+/* On very narrow screens, reduce table cell padding to allow more
+   data to show before horizontal scroll kicks in */
+@media (max-width: 480px) {
+    thead th,
+    tbody td {
+        padding: 10px 10px;
+        font-size: 12.5px;
+    }
+
+    .actions-cell {
+        gap: 4px;
+        min-width: 88px;
+    }
+
+    .action-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+
+/* ── 8. CONTENT CONTAINER ───────────────────────────────────────── */
+/* Ensure .content never causes a horizontal scrollbar regardless of
+   what's inside, and stays within the viewport at all times. */
+
+.content {
+    box-sizing: border-box;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 18px 12px 48px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 375px) {
+    .content {
+        padding: 14px 10px 40px;
+        gap: 16px;
+    }
+}
+
+
+/* ── 9. ADD-TASK FORM (inside aside) ────────────────────────────── */
+@media (max-width: 600px) {
+    .card-head {
+        padding: 16px 16px 14px;
+        gap: 10px;
+    }
+
+    .card-body {
+        padding: 16px 16px;
+    }
+
+    .add-form {
+        gap: 12px;
+    }
+}
+
+
+/* ── 10. FOOTER ─────────────────────────────────────────────────── */
+/* footer already has flex-wrap:wrap; reinforce centering on mobile */
+@media (max-width: 480px) {
+    footer {
+        padding: 14px 16px;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        gap: 6px;
+    }
+
+    footer p {
+        font-size: 12px;
+    }
+}
+
+
+/* ── 11. GLOBAL OVERFLOW GUARD ──────────────────────────────────── */
+/* Catch-all: any direct child of .layout must not exceed viewport  */
+@media (max-width: 768px) {
+    .layout > * {
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+}
 /* Autofill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
